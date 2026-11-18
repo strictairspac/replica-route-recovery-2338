@@ -19,3 +19,22 @@ class Trial(Base):
 class Audit(Base):
     __tablename__='audit_logs'
     id=Column(Integer,primary_key=True);actor=Column(String(120),nullable=False);action=Column(String(160),nullable=False);created_at=Column(DateTime(timezone=True),default=lambda:datetime.now(timezone.utc))
+class WriteWorkload(Base):
+    __tablename__='write_workloads'
+    id=Column(Integer,primary_key=True);code=Column(String(80),unique=True,nullable=False);title=Column(String(160),nullable=False)
+    writes=Column(JSON,nullable=False);note=Column(String(300),default='')
+    created_at=Column(DateTime(timezone=True),default=lambda:datetime.now(timezone.utc))
+class BackupJob(Base):
+    __tablename__='backup_jobs'
+    id=Column(Integer,primary_key=True);name=Column(String(120),nullable=False);workload_id=Column(Integer,ForeignKey('write_workloads.id'),nullable=False)
+    start_ms=Column(Integer,nullable=False);finish_ms=Column(Integer,nullable=False);copy_point_ms=Column(Integer,nullable=False)
+    corruption=Column(String(40),nullable=False,default='none');status=Column(String(20),nullable=False,default='queued');error=Column(Text,nullable=True)
+    artifact=Column(JSON,nullable=True);backup_meta=Column(JSON,nullable=True)
+    created_at=Column(DateTime(timezone=True),default=lambda:datetime.now(timezone.utc))
+class RecoveryJob(Base):
+    __tablename__='recovery_jobs'
+    id=Column(Integer,primary_key=True);name=Column(String(120),unique=True,nullable=False);backup_id=Column(Integer,ForeignKey('backup_jobs.id'),nullable=False)
+    target_ms=Column(Integer,nullable=False);missing_segments=Column(JSON,nullable=False,default=list)
+    status=Column(String(20),nullable=False,default='queued');error=Column(Text,nullable=True);fail_code=Column(String(60),nullable=True)
+    result=Column(JSON,nullable=True);attempts=Column(Integer,nullable=False,default=0)
+    created_at=Column(DateTime(timezone=True),default=lambda:datetime.now(timezone.utc))

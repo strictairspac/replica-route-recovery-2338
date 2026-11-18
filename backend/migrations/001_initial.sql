@@ -1,3 +1,6 @@
 -- Initial schema is applied idempotently by SQLAlchemy metadata.create_all.
--- Authoritative entities: users, nodes, request_sets, trials, audit_logs.
+-- Authoritative entities: users, nodes, request_sets, trials, audit_logs,
+-- write_workloads, backup_jobs, recovery_jobs.
 -- Routing request events and frozen input/result evidence are MySQL JSON.
+-- PITR 备份产物（模糊快照 + 增量 WAL 分段 + 清单）与恢复结果同样以 MySQL JSON 持久化，
+-- 另在 run-artifacts 卷写一份可导出的 JSON 副本。
